@@ -155,11 +155,6 @@ func NewAdapter() (adapter *Adapter, err error) {
 		ipAddressType:       DefaultIpAddressType,
 	}
 
-	adapter.manifest, err = buildManifest(adapter)
-	if err != nil {
-		return nil, err
-	}
-
 	return
 }
 
@@ -253,6 +248,17 @@ func (a *Adapter) WithIpAddressType(ipAddressType string) *Adapter {
 	}
 	return a
 }
+
+// ApplyManifest returns the receiver with a built manifest attached
+func (a *Adapter) ApplyManifest() *Adapter {
+	var err error
+	a.manifest, err = buildManifest(a)
+        if err != nil {
+                log.Fatal(err)
+        }
+	return a
+}
+
 
 // ClusterID returns the ClusterID tag that all resources from the same Kubernetes cluster share.
 // It's taken from the current ec2 instance.
@@ -479,7 +485,7 @@ func buildManifest(awsAdapter *Adapter) (*manifest, error) {
 
 	clusterID := instanceDetails.clusterID()
 
-	securityGroupDetails, err := findSecurityGroupWithClusterID(awsAdapter.ec2, clusterID)
+	securityGroupDetails, err := findSecurityGroupWithClusterID(awsAdapter.ec2, clusterID, awsAdapter.controllerID)
 	if err != nil {
 		return nil, err
 	}

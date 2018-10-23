@@ -199,7 +199,8 @@ func main() {
 		WithIdleConnectionTimeout(idleConnectionTimeout).
 		WithControllerID(controllerID).
 		WithSslPolicy(sslPolicy).
-		WithIpAddressType(ipAddressType)
+		WithIpAddressType(ipAddressType).
+		ApplyManifest()
 
 	certificatesProvider, err := certs.NewCachingProvider(
 		certPollingInterval,
