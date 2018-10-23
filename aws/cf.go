@@ -3,6 +3,7 @@ package aws
 import (
 	"fmt"
 	"strings"
+	"strconv"
 
 	"time"
 
@@ -98,6 +99,9 @@ const (
 	parameterLoadBalancerSchemeParameter             = "LoadBalancerSchemeParameter"
 	parameterLoadBalancerSecurityGroupParameter      = "LoadBalancerSecurityGroupParameter"
 	parameterLoadBalancerSubnetsParameter            = "LoadBalancerSubnetsParameter"
+	parameterLoadBalancerAlbLogsS3EnabledParameter   = "LoadBalancerAlbLogsS3EnabledParameter"
+	parameterLoadBalancerAlbLogsS3BucketParameter    = "LoadBalancerAlbLogsS3BucketParameter"
+	parameterLoadBalancerAlbLogsS3PrefixParameter    = "LoadBalancerAlbLogsS3PrefixParameter"
 	parameterTargetGroupHealthCheckPathParameter     = "TargetGroupHealthCheckPathParameter"
 	parameterTargetGroupHealthCheckPortParameter     = "TargetGroupHealthCheckPortParameter"
 	parameterTargetGroupHealthCheckIntervalParameter = "TargetGroupHealthCheckIntervalParameter"
@@ -126,6 +130,9 @@ type stackSpec struct {
 	controllerID                 string
 	sslPolicy                    string
 	ipAddressType                string
+	albLogsS3Enabled             bool
+	albLogsS3Bucket              string
+	albLogsS3Prefix              string
 }
 
 type healthCheck struct {
@@ -147,6 +154,9 @@ func createStack(svc cloudformationiface.CloudFormationAPI, spec *stackSpec) (st
 			cfParam(parameterLoadBalancerSchemeParameter, spec.scheme),
 			cfParam(parameterLoadBalancerSecurityGroupParameter, spec.securityGroupID),
 			cfParam(parameterLoadBalancerSubnetsParameter, strings.Join(spec.subnets, ",")),
+			cfParam(parameterLoadBalancerAlbLogsS3EnabledParameter, strconv.FormatBool(spec.albLogsS3Enabled)),
+			cfParam(parameterLoadBalancerAlbLogsS3BucketParameter, spec.albLogsS3Bucket),
+			cfParam(parameterLoadBalancerAlbLogsS3PrefixParameter, spec.albLogsS3Prefix),
 			cfParam(parameterTargetGroupVPCIDParameter, spec.vpcID),
 			cfParam(parameterTargetTargetPortParameter, fmt.Sprintf("%d", spec.targetPort)),
 			cfParam(parameterListenerSslPolicyParameter, spec.sslPolicy),
@@ -197,6 +207,9 @@ func updateStack(svc cloudformationiface.CloudFormationAPI, spec *stackSpec) (st
 			cfParam(parameterLoadBalancerSchemeParameter, spec.scheme),
 			cfParam(parameterLoadBalancerSecurityGroupParameter, spec.securityGroupID),
 			cfParam(parameterLoadBalancerSubnetsParameter, strings.Join(spec.subnets, ",")),
+			cfParam(parameterLoadBalancerAlbLogsS3EnabledParameter, strconv.FormatBool(spec.albLogsS3Enabled)),
+			cfParam(parameterLoadBalancerAlbLogsS3BucketParameter, spec.albLogsS3Bucket),
+			cfParam(parameterLoadBalancerAlbLogsS3PrefixParameter, spec.albLogsS3Prefix),
 			cfParam(parameterTargetGroupVPCIDParameter, spec.vpcID),
 			cfParam(parameterTargetTargetPortParameter, fmt.Sprintf("%d", spec.targetPort)),
 			cfParam(parameterListenerSslPolicyParameter, spec.sslPolicy),
