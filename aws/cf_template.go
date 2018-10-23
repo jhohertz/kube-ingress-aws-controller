@@ -73,6 +73,21 @@ func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds u
 			Description: "IP Address Type, 'ipv4' or 'dualstack'",
 			Default:     "ipv4",
 		},
+		parameterLoadBalancerAlbLogsS3EnabledParameter: &cloudformation.Parameter{
+			Type:          "String",
+			Description:   "If set, true, enable request logging for the ALB in an S3 bucket",
+			Default:       "false",
+		},
+		parameterLoadBalancerAlbLogsS3BucketParameter: &cloudformation.Parameter{
+			Type:        "String",
+			Description: "The name of an S3 bucket to have the ALB drop log files",
+			Default:     "",
+		},
+		parameterLoadBalancerAlbLogsS3PrefixParameter: &cloudformation.Parameter{
+			Type:        "String",
+			Description: "The name of a prefix within the s3 bucket to have the ALB drop log files",
+			Default:     "",
+		},
 	}
 	template.AddResource("HTTPListener", &cloudformation.ElasticLoadBalancingV2Listener{
 		DefaultActions: &cloudformation.ElasticLoadBalancingV2ListenerActionList{
@@ -137,6 +152,18 @@ func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds u
 			cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttribute{
 				Key:   cloudformation.String("idle_timeout.timeout_seconds"),
 				Value: cloudformation.String(fmt.Sprintf("%d", idleConnectionTimeoutSeconds)),
+			},
+			cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttribute{
+				Key:   cloudformation.String("access_logs.s3.enabled"),
+				Value: cloudformation.Ref(parameterLoadBalancerAlbLogsS3EnabledParameter).String(),
+			},
+			cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttribute{
+				Key:   cloudformation.String("access_logs.s3.bucket"),
+				Value: cloudformation.Ref(parameterLoadBalancerAlbLogsS3BucketParameter).String(),
+			},
+			cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttribute{
+				Key:   cloudformation.String("access_logs.s3.prefix"),
+				Value: cloudformation.Ref(parameterLoadBalancerAlbLogsS3PrefixParameter).String(),
 			},
 		},
 

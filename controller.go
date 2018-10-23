@@ -54,6 +54,9 @@ var (
 	blacklistCertARN           string
 	blacklistCertArnMap        map[string]bool
 	ipAddressType              string
+	albLogsS3Enabled           bool
+	albLogsS3Bucket            string
+	albLogsS3Prefix            string
 )
 
 func loadSettings() error {
@@ -94,6 +97,9 @@ func loadSettings() error {
 	flag.StringVar(&sslPolicy, "ssl-policy", aws.DefaultSslPolicy, "Security policy that will define the protocols/ciphers accepts by the SSL listener")
 	flag.StringVar(&blacklistCertARN, "blacklist-certificate-arns", "", "Certificate ARNs to not consider by the controller: arn1,arn2,..")
 	flag.StringVar(&ipAddressType, "ip-addr-type", aws.DefaultIpAddressType, "IP Address type to use, one of 'ipv4' or 'dualstack'")
+	flag.BoolVar(&albLogsS3Enabled, "logs-s3-enabled", false, "enables logging ALB requests to S3 bucket")
+	flag.StringVar(&albLogsS3Bucket, "logs-s3-bucket", aws.DefaultAlbS3LogsBucket, "S3 bucket to be used for ALB logging")
+	flag.StringVar(&albLogsS3Prefix, "logs-s3-prefix", aws.DefaultAlbS3LogsPrefix, "Prefix within S3 bucket to be used for ALB logging")
 
 	flag.Parse()
 
@@ -200,6 +206,8 @@ func main() {
 		WithControllerID(controllerID).
 		WithSslPolicy(sslPolicy).
 		WithIpAddressType(ipAddressType).
+		WithAlbLogsS3Bucket(albLogsS3Bucket).
+		WithAlbLogsS3Prefix(albLogsS3Prefix).
 		ApplyManifest()
 
 	certificatesProvider, err := certs.NewCachingProvider(

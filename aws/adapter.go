@@ -56,6 +56,9 @@ type Adapter struct {
 	controllerID               string
 	sslPolicy                  string
 	ipAddressType              string
+	albLogsS3Enabled           bool
+	albLogsS3Bucket            string
+	albLogsS3Prefix            string
 }
 
 type manifest struct {
@@ -88,6 +91,10 @@ const (
 	DefaultSslPolicy = "ELBSecurityPolicy-2016-08"
 	// DefaultIpAddressType sets IpAddressType to "ipv4", it is either ipv4 or dualstack
 	DefaultIpAddressType = "ipv4"
+	// Default ALB logging S3 bucket is a blank string, and must be set if enabled
+	DefaultAlbS3LogsBucket = ""
+	// Default ALB logging S3 prefix is a blank string, and optionally set if desired
+	DefaultAlbS3LogsPrefix = ""
 
 	ipAddressTypeDualstack = "dualstack"
 	nameTag                = "Name"
@@ -153,6 +160,8 @@ func NewAdapter() (adapter *Adapter, err error) {
 		controllerID:        DefaultControllerID,
 		sslPolicy:           DefaultSslPolicy,
 		ipAddressType:       DefaultIpAddressType,
+		albLogsS3Bucket:     DefaultAlbS3LogsBucket,
+		albLogsS3Prefix:     DefaultAlbS3LogsPrefix,
 	}
 
 	return
@@ -259,6 +268,17 @@ func (a *Adapter) ApplyManifest() *Adapter {
 	return a
 }
 
+// WithAlbS3LogsBucket returns the receiver adapter after changing the S3 bucket for logging
+func (a *Adapter) WithAlbLogsS3Bucket(bucket string) *Adapter {
+	a.albLogsS3Bucket = bucket
+	return a
+}
+
+// WithAlbS3LogsBucket returns the receiver adapter after changing the S3 bucket for logging
+func (a *Adapter) WithAlbLogsS3Prefix(prefix string) *Adapter {
+	a.albLogsS3Prefix = prefix
+	return a
+}
 
 // ClusterID returns the ClusterID tag that all resources from the same Kubernetes cluster share.
 // It's taken from the current ec2 instance.
@@ -420,6 +440,9 @@ func (a *Adapter) CreateStack(certificateARNs []string, scheme, owner string) (s
 		controllerID:                 a.controllerID,
 		sslPolicy:                    a.sslPolicy,
 		ipAddressType:                a.ipAddressType,
+		albLogsS3Enabled:             a.albLogsS3Enabled,
+		albLogsS3Bucket:              a.albLogsS3Bucket,
+		albLogsS3Prefix:              a.albLogsS3Prefix,
 	}
 
 	return createStack(a.cloudformation, spec)
@@ -446,6 +469,9 @@ func (a *Adapter) UpdateStack(stackName string, certificateARNs map[string]time.
 		controllerID:                 a.controllerID,
 		sslPolicy:                    a.sslPolicy,
 		ipAddressType:                a.ipAddressType,
+		albLogsS3Enabled:             a.albLogsS3Enabled,
+		albLogsS3Bucket:              a.albLogsS3Bucket,
+		albLogsS3Prefix:              a.albLogsS3Prefix,
 	}
 
 	return updateStack(a.cloudformation, spec)
