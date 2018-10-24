@@ -206,6 +206,7 @@ func main() {
 		WithControllerID(controllerID).
 		WithSslPolicy(sslPolicy).
 		WithIpAddressType(ipAddressType).
+		WithAlbLogsS3Enabled(albLogsS3Enabled).
 		WithAlbLogsS3Bucket(albLogsS3Bucket).
 		WithAlbLogsS3Prefix(albLogsS3Prefix).
 		ApplyManifest()

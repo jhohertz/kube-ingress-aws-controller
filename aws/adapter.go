@@ -268,13 +268,19 @@ func (a *Adapter) ApplyManifest() *Adapter {
 	return a
 }
 
-// WithAlbS3LogsBucket returns the receiver adapter after changing the S3 bucket for logging
+// WithAlbLogsS3Enabled returns the receiver adapter after changing the S3 bucket for logging
+func (a *Adapter) WithAlbLogsS3Enabled(isEnabled bool) *Adapter {
+	a.albLogsS3Enabled = isEnabled
+	return a
+}
+
+// WithAlbLogsS3Bucket returns the receiver adapter after changing the S3 bucket for logging
 func (a *Adapter) WithAlbLogsS3Bucket(bucket string) *Adapter {
 	a.albLogsS3Bucket = bucket
 	return a
 }
 
-// WithAlbS3LogsBucket returns the receiver adapter after changing the S3 bucket for logging
+// WithAlbLogsS3Prefix returns the receiver adapter after changing the S3 prefix within the bucket for logging
 func (a *Adapter) WithAlbLogsS3Prefix(prefix string) *Adapter {
 	a.albLogsS3Prefix = prefix
 	return a
