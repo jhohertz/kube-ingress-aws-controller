@@ -162,6 +162,13 @@ func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds u
 				},
 			)
 		}
+	} else {
+		albAttrList = append(albAttrList,
+			cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttribute{
+				Key:   cloudformation.String("access_logs.s3.enabled"),
+				Value: cloudformation.String("false"),
+			},
+		)
 	}
 
 	template.AddResource("LB", &cloudformation.ElasticLoadBalancingV2LoadBalancer{
