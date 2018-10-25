@@ -109,7 +109,8 @@ const (
 	parameterListenerSslPolicyParameter              = "ListenerSslPolicyParameter"
 	parameterIpAddressTypeParameter                  = "IpAddressType"
 
-	conditionLoadBalancerLogsS3EnabledCondition      = "LoadBalancerLogToS3Enabled"
+	conditionLoadBalancerLogsS3BucketCondition       = "LoadBalancerLogToS3EnableBucket"
+	conditionLoadBalancerLogsS3PrefixCondition       = "LoadBalancerLogToS3EnablePrefix"
 )
 
 type stackSpec struct {

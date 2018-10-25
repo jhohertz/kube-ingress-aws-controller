@@ -76,15 +76,17 @@ func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds u
 		parameterLoadBalancerAlbLogsS3BucketParameter: &cloudformation.Parameter{
 			Type:        "String",
 			Description: "The name of an S3 bucket to have the ALB drop log files",
+			Default:     "",
 		},
 		parameterLoadBalancerAlbLogsS3PrefixParameter: &cloudformation.Parameter{
 			Type:        "String",
 			Description: "The name of a prefix within the s3 bucket to have the ALB drop log files",
+			Default:     "",
 		},
 	}
 
 	template.Conditions = map[string]interface{}{
-		conditionLoadBalancerLogsS3EnabledCondition: map[string]interface{}{
+		conditionLoadBalancerLogsS3BucketCondition: map[string]interface{}{
 			"Fn::Not": []interface{}{
 				map[string]interface{}{
 					"Fn::Equals": []string{
@@ -92,6 +94,19 @@ func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds u
 						"",
 					},
 				},
+			},
+		},
+		conditionLoadBalancerLogsS3PrefixCondition: map[string]interface{}{
+			"Fn::And": []interface{}{
+				"Fn::Not": []interface{}{
+					map[string]interface{}{
+						"Fn::Equals": []string{
+							parameterLoadBalancerAlbLogsS3PrefixParameter,
+							"",
+						},
+					},
+				},
+				"Condition": conditionLoadBalancerLogsS3BucketCondition
 			},
 		},
 	}
@@ -163,7 +178,7 @@ func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds u
 			cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttribute{
 				Key:   cloudformation.String("access_logs.s3.enabled"),
 				Value: cloudformation.If(
-				         conditionLoadBalancerLogsS3EnabledCondition,
+				         conditionLoadBalancerLogsS3BucketCondition,
 				         cloudformation.String("true"),
 				         cloudformation.String("false"),
 				       ).String(),
@@ -171,7 +186,7 @@ func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds u
 			cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttribute{
 				Key:   cloudformation.String("access_logs.s3.bucket"),
 				Value: cloudformation.If(
-				         conditionLoadBalancerLogsS3EnabledCondition,
+				         conditionLoadBalancerLogsS3BucketCondition,
 				         cloudformation.Ref(parameterLoadBalancerAlbLogsS3BucketParameter).String(),
 				         cloudformation.Ref("AWS::NoValue").String(),
 				       ).String(),
@@ -179,7 +194,7 @@ func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds u
 			cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttribute{
 				Key:   cloudformation.String("access_logs.s3.prefix"),
 				Value: cloudformation.If(
-				         conditionLoadBalancerLogsS3EnabledCondition,
+				         conditionLoadBalancerLogsS3PrefixCondition,
 				         cloudformation.Ref(parameterLoadBalancerAlbLogsS3PrefixParameter).String(),
 				         cloudformation.Ref("AWS::NoValue").String(),
 				       ).String(),

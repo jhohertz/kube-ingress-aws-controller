@@ -253,6 +253,8 @@ func main() {
 	log.Printf("\tCertificates per ALB: %d (SNI: %t)", certificatesPerALB, certificatesPerALB > 1)
 	log.Printf("\tBlacklisted Certificate ARNs (%d): %s", len(blacklistCertArnMap), blacklistCertARN)
 	log.Printf("\tIngress class filters: %s", kubeAdapter.IngressFiltersString())
+	log.Printf("\tALB Logging S3 Bucket: %s", awsAdapter.S3Bucket())
+	log.Printf("\tALB Logging S3 Prefix: %s", awsAdapter.S3Prefix())
 
 	ctx, cancel := context.WithCancel(context.Background())
 	go handleTerminationSignals(cancel, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

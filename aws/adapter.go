@@ -290,6 +290,16 @@ func (a *Adapter) InstanceID() string {
 	return a.manifest.instance.id
 }
 
+// S3Bucket returns the S3 Bucket to be logged to
+func (a *Adapter) S3Bucket() string {
+	return a.albLogsS3Bucket
+}
+
+// S3Prefix returns the S3 Prefix to be logged to
+func (a *Adapter) S3Prefix() string {
+	return a.albLogsS3Prefix
+}
+
 // AutoScalingGroupNames returns names of the Auto Scaling Groups that
 // kubernetes nodes belong to.
 func (a *Adapter) AutoScalingGroupNames() []string {
