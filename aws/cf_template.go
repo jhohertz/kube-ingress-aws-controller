@@ -97,7 +97,7 @@ func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds u
 			},
 		},
 		conditionLoadBalancerLogsS3PrefixCondition: map[string]interface{}{
-			"Fn::And": []interface{}{
+			"Fn::And": map[string]interface{}{
 				"Fn::Not": []interface{}{
 					map[string]interface{}{
 						"Fn::Equals": []string{
