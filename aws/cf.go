@@ -98,8 +98,6 @@ const (
 	parameterLoadBalancerSchemeParameter             = "LoadBalancerSchemeParameter"
 	parameterLoadBalancerSecurityGroupParameter      = "LoadBalancerSecurityGroupParameter"
 	parameterLoadBalancerSubnetsParameter            = "LoadBalancerSubnetsParameter"
-	parameterLoadBalancerAlbLogsS3BucketParameter    = "LoadBalancerAlbLogsS3BucketParameter"
-	parameterLoadBalancerAlbLogsS3PrefixParameter    = "LoadBalancerAlbLogsS3PrefixParameter"
 	parameterTargetGroupHealthCheckPathParameter     = "TargetGroupHealthCheckPathParameter"
 	parameterTargetGroupHealthCheckPortParameter     = "TargetGroupHealthCheckPortParameter"
 	parameterTargetGroupHealthCheckIntervalParameter = "TargetGroupHealthCheckIntervalParameter"
@@ -108,9 +106,6 @@ const (
 	parameterListenerCertificatesParameter           = "ListenerCertificatesParameter"
 	parameterListenerSslPolicyParameter              = "ListenerSslPolicyParameter"
 	parameterIpAddressTypeParameter                  = "IpAddressType"
-
-	conditionLoadBalancerLogsS3BucketCondition       = "LoadBalancerLogToS3EnableBucket"
-	conditionLoadBalancerLogsS3PrefixCondition       = "LoadBalancerLogToS3EnablePrefix"
 )
 
 type stackSpec struct {
@@ -142,7 +137,7 @@ type healthCheck struct {
 }
 
 func createStack(svc cloudformationiface.CloudFormationAPI, spec *stackSpec) (string, error) {
-	template, err := generateTemplate(spec.certificateARNs, spec.idleConnectionTimeoutSeconds)
+	template, err := generateTemplate(spec.certificateARNs, spec.idleConnectionTimeoutSeconds, spec.albLogsS3Bucket, spec.albLogsS3Prefix)
 	if err != nil {
 		return "", err
 	}
@@ -154,8 +149,6 @@ func createStack(svc cloudformationiface.CloudFormationAPI, spec *stackSpec) (st
 			cfParam(parameterLoadBalancerSchemeParameter, spec.scheme),
 			cfParam(parameterLoadBalancerSecurityGroupParameter, spec.securityGroupID),
 			cfParam(parameterLoadBalancerSubnetsParameter, strings.Join(spec.subnets, ",")),
-			cfParam(parameterLoadBalancerAlbLogsS3BucketParameter, spec.albLogsS3Bucket),
-			cfParam(parameterLoadBalancerAlbLogsS3PrefixParameter, spec.albLogsS3Prefix),
 			cfParam(parameterTargetGroupVPCIDParameter, spec.vpcID),
 			cfParam(parameterTargetTargetPortParameter, fmt.Sprintf("%d", spec.targetPort)),
 			cfParam(parameterListenerSslPolicyParameter, spec.sslPolicy),
@@ -195,7 +188,7 @@ func createStack(svc cloudformationiface.CloudFormationAPI, spec *stackSpec) (st
 }
 
 func updateStack(svc cloudformationiface.CloudFormationAPI, spec *stackSpec) (string, error) {
-	template, err := generateTemplate(spec.certificateARNs, spec.idleConnectionTimeoutSeconds)
+	template, err := generateTemplate(spec.certificateARNs, spec.idleConnectionTimeoutSeconds, spec.albLogsS3Bucket, spec.albLogsS3Prefix)
 	if err != nil {
 		return "", err
 	}
@@ -206,8 +199,6 @@ func updateStack(svc cloudformationiface.CloudFormationAPI, spec *stackSpec) (st
 			cfParam(parameterLoadBalancerSchemeParameter, spec.scheme),
 			cfParam(parameterLoadBalancerSecurityGroupParameter, spec.securityGroupID),
 			cfParam(parameterLoadBalancerSubnetsParameter, strings.Join(spec.subnets, ",")),
-			cfParam(parameterLoadBalancerAlbLogsS3BucketParameter, spec.albLogsS3Bucket),
-			cfParam(parameterLoadBalancerAlbLogsS3PrefixParameter, spec.albLogsS3Prefix),
 			cfParam(parameterTargetGroupVPCIDParameter, spec.vpcID),
 			cfParam(parameterTargetTargetPortParameter, fmt.Sprintf("%d", spec.targetPort)),
 			cfParam(parameterListenerSslPolicyParameter, spec.sslPolicy),

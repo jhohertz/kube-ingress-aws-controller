@@ -22,7 +22,7 @@ func hashARNs(certARNs []string) []byte {
 	return hash.Sum(nil)
 }
 
-func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds uint) (string, error) {
+func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds uint, albLogsS3Bucket string, albLogsS3Prefix string) (string, error) {
 	template := cloudformation.NewTemplate()
 	template.Description = "Load Balancer for Kubernetes Ingress"
 	template.Parameters = map[string]*cloudformation.Parameter{
@@ -72,56 +72,6 @@ func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds u
 			Type:        "String",
 			Description: "IP Address Type, 'ipv4' or 'dualstack'",
 			Default:     "ipv4",
-		},
-		parameterLoadBalancerAlbLogsS3BucketParameter: &cloudformation.Parameter{
-			Type:        "String",
-			Description: "The name of an S3 bucket to have the ALB drop log files",
-			Default:     "",
-		},
-		parameterLoadBalancerAlbLogsS3PrefixParameter: &cloudformation.Parameter{
-			Type:        "String",
-			Description: "The name of a prefix within the s3 bucket to have the ALB drop log files",
-			Default:     "",
-		},
-	}
-
-	template.Conditions = map[string]interface{}{
-		conditionLoadBalancerLogsS3BucketCondition: map[string]interface{}{
-			"Fn::Not": []interface{}{
-				map[string]interface{}{
-					"Fn::Equals": []string{
-						parameterLoadBalancerAlbLogsS3BucketParameter,
-						"",
-					},
-				},
-			},
-		},
-		conditionLoadBalancerLogsS3PrefixCondition: map[string]interface{}{
-			"Fn::And": []interface{}{
-				map[string]interface{}{
-					"Fn::Not": []interface{}{
-						map[string]interface{}{
-							"Fn::Equals": []string{
-								parameterLoadBalancerAlbLogsS3PrefixParameter,
-								"",
-							},
-						},
-					},
-				},
-				map[string]interface{}{
-					"Condition": conditionLoadBalancerLogsS3BucketCondition,
-					/*
-					"Fn::Not": []interface{}{
-						map[string]interface{}{
-							"Fn::Equals": []string{
-								parameterLoadBalancerAlbLogsS3BucketParameter,
-								"",
-							},
-						},
-					},
-					*/
-				},
-			},
 		},
 	}
 
@@ -183,37 +133,39 @@ func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds u
 		})
 	}
 
-	template.AddResource("LB", &cloudformation.ElasticLoadBalancingV2LoadBalancer{
-		LoadBalancerAttributes: &cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttributeList{
-			cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttribute{
-				Key:   cloudformation.String("idle_timeout.timeout_seconds"),
-				Value: cloudformation.String(fmt.Sprintf("%d", idleConnectionTimeoutSeconds)),
-			},
+	// Build up the LoadBalancerAttributes list, as there is no way to make attributes conditional in the template
+	albAttrList := make(cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttributeList, 0, 4)
+	albAttrList = append(albAttrList,
+		cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttribute{
+			Key:   cloudformation.String("idle_timeout.timeout_seconds"),
+			Value: cloudformation.String(fmt.Sprintf("%d", idleConnectionTimeoutSeconds)),
+		},
+	)
+	if albLogsS3Bucket != "" {
+		albAttrList = append(albAttrList,
 			cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttribute{
 				Key:   cloudformation.String("access_logs.s3.enabled"),
-				Value: cloudformation.If(
-				         conditionLoadBalancerLogsS3BucketCondition,
-				         cloudformation.String("true"),
-				         cloudformation.String("false"),
-				       ).String(),
+				Value: cloudformation.String("true"),
 			},
+		)
+		albAttrList = append(albAttrList,
 			cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttribute{
 				Key:   cloudformation.String("access_logs.s3.bucket"),
-				Value: cloudformation.If(
-				         conditionLoadBalancerLogsS3BucketCondition,
-				         cloudformation.Ref(parameterLoadBalancerAlbLogsS3BucketParameter).String(),
-				         cloudformation.Ref("AWS::NoValue").String(),
-				       ).String(),
+				Value: cloudformation.String(albLogsS3Bucket),
 			},
-			cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttribute{
-				Key:   cloudformation.String("access_logs.s3.prefix"),
-				Value: cloudformation.If(
-				         conditionLoadBalancerLogsS3PrefixCondition,
-				         cloudformation.Ref(parameterLoadBalancerAlbLogsS3PrefixParameter).String(),
-				         cloudformation.Ref("AWS::NoValue").String(),
-				       ).String(),
-			},
-		},
+		)
+		if albLogsS3Prefix != "" {
+			albAttrList = append(albAttrList,
+				cloudformation.ElasticLoadBalancingV2LoadBalancerLoadBalancerAttribute{
+					Key:   cloudformation.String("access_logs.s3.prefix"),
+					Value: cloudformation.String(albLogsS3Prefix),
+				},
+			)
+		}
+	}
+
+	template.AddResource("LB", &cloudformation.ElasticLoadBalancingV2LoadBalancer{
+		LoadBalancerAttributes: &albAttrList,
 
 		IPAddressType:  cloudformation.Ref(parameterIpAddressTypeParameter).String(),
 		Scheme:         cloudformation.Ref(parameterLoadBalancerSchemeParameter).String(),
