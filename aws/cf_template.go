@@ -106,7 +106,7 @@ func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds u
 						},
 					},
 				},
-				"Condition": conditionLoadBalancerLogsS3BucketCondition
+				"Condition": conditionLoadBalancerLogsS3BucketCondition,
 			},
 		},
 	}
