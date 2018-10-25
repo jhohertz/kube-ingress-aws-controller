@@ -3,7 +3,6 @@ package aws
 import (
 	"fmt"
 	"strings"
-	"strconv"
 
 	"time"
 
@@ -99,7 +98,6 @@ const (
 	parameterLoadBalancerSchemeParameter             = "LoadBalancerSchemeParameter"
 	parameterLoadBalancerSecurityGroupParameter      = "LoadBalancerSecurityGroupParameter"
 	parameterLoadBalancerSubnetsParameter            = "LoadBalancerSubnetsParameter"
-	parameterLoadBalancerAlbLogsS3EnabledParameter   = "LoadBalancerAlbLogsS3EnabledParameter"
 	parameterLoadBalancerAlbLogsS3BucketParameter    = "LoadBalancerAlbLogsS3BucketParameter"
 	parameterLoadBalancerAlbLogsS3PrefixParameter    = "LoadBalancerAlbLogsS3PrefixParameter"
 	parameterTargetGroupHealthCheckPathParameter     = "TargetGroupHealthCheckPathParameter"
@@ -110,6 +108,8 @@ const (
 	parameterListenerCertificatesParameter           = "ListenerCertificatesParameter"
 	parameterListenerSslPolicyParameter              = "ListenerSslPolicyParameter"
 	parameterIpAddressTypeParameter                  = "IpAddressType"
+
+	conditionLoadBalancerLogsS3EnabledCondition      = "LoadBalancerLogToS3Enabled"
 )
 
 type stackSpec struct {
@@ -130,7 +130,6 @@ type stackSpec struct {
 	controllerID                 string
 	sslPolicy                    string
 	ipAddressType                string
-	albLogsS3Enabled             bool
 	albLogsS3Bucket              string
 	albLogsS3Prefix              string
 }
@@ -154,7 +153,6 @@ func createStack(svc cloudformationiface.CloudFormationAPI, spec *stackSpec) (st
 			cfParam(parameterLoadBalancerSchemeParameter, spec.scheme),
 			cfParam(parameterLoadBalancerSecurityGroupParameter, spec.securityGroupID),
 			cfParam(parameterLoadBalancerSubnetsParameter, strings.Join(spec.subnets, ",")),
-			cfParam(parameterLoadBalancerAlbLogsS3EnabledParameter, strconv.FormatBool(spec.albLogsS3Enabled)),
 			cfParam(parameterLoadBalancerAlbLogsS3BucketParameter, spec.albLogsS3Bucket),
 			cfParam(parameterLoadBalancerAlbLogsS3PrefixParameter, spec.albLogsS3Prefix),
 			cfParam(parameterTargetGroupVPCIDParameter, spec.vpcID),
@@ -207,7 +205,6 @@ func updateStack(svc cloudformationiface.CloudFormationAPI, spec *stackSpec) (st
 			cfParam(parameterLoadBalancerSchemeParameter, spec.scheme),
 			cfParam(parameterLoadBalancerSecurityGroupParameter, spec.securityGroupID),
 			cfParam(parameterLoadBalancerSubnetsParameter, strings.Join(spec.subnets, ",")),
-			cfParam(parameterLoadBalancerAlbLogsS3EnabledParameter, strconv.FormatBool(spec.albLogsS3Enabled)),
 			cfParam(parameterLoadBalancerAlbLogsS3BucketParameter, spec.albLogsS3Bucket),
 			cfParam(parameterLoadBalancerAlbLogsS3PrefixParameter, spec.albLogsS3Prefix),
 			cfParam(parameterTargetGroupVPCIDParameter, spec.vpcID),

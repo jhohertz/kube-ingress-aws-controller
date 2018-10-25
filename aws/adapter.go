@@ -56,7 +56,6 @@ type Adapter struct {
 	controllerID               string
 	sslPolicy                  string
 	ipAddressType              string
-	albLogsS3Enabled           bool
 	albLogsS3Bucket            string
 	albLogsS3Prefix            string
 }
@@ -263,12 +262,6 @@ func (a *Adapter) WithIpAddressType(ipAddressType string) *Adapter {
 	return a
 }
 
-// WithAlbLogsS3Enabled returns the receiver adapter after changing the S3 bucket for logging
-func (a *Adapter) WithAlbLogsS3Enabled(isEnabled bool) *Adapter {
-	a.albLogsS3Enabled = isEnabled
-	return a
-}
-
 // WithAlbLogsS3Bucket returns the receiver adapter after changing the S3 bucket for logging
 func (a *Adapter) WithAlbLogsS3Bucket(bucket string) *Adapter {
 	a.albLogsS3Bucket = bucket
@@ -441,7 +434,6 @@ func (a *Adapter) CreateStack(certificateARNs []string, scheme, owner string) (s
 		controllerID:                 a.controllerID,
 		sslPolicy:                    a.sslPolicy,
 		ipAddressType:                a.ipAddressType,
-		albLogsS3Enabled:             a.albLogsS3Enabled,
 		albLogsS3Bucket:              a.albLogsS3Bucket,
 		albLogsS3Prefix:              a.albLogsS3Prefix,
 	}
@@ -470,7 +462,6 @@ func (a *Adapter) UpdateStack(stackName string, certificateARNs map[string]time.
 		controllerID:                 a.controllerID,
 		sslPolicy:                    a.sslPolicy,
 		ipAddressType:                a.ipAddressType,
-		albLogsS3Enabled:             a.albLogsS3Enabled,
 		albLogsS3Bucket:              a.albLogsS3Bucket,
 		albLogsS3Prefix:              a.albLogsS3Prefix,
 	}
