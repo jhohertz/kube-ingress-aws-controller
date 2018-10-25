@@ -98,21 +98,28 @@ func generateTemplate(certs map[string]time.Time, idleConnectionTimeoutSeconds u
 		},
 		conditionLoadBalancerLogsS3PrefixCondition: map[string]interface{}{
 			"Fn::And": []interface{}{
-				"Fn::Not": []interface{}{
-					map[string]interface{}{
-						"Fn::Equals": []string{
-							parameterLoadBalancerAlbLogsS3PrefixParameter,
-							"",
+				map[string]interface{}{
+					"Fn::Not": []interface{}{
+						map[string]interface{}{
+							"Fn::Equals": []string{
+								parameterLoadBalancerAlbLogsS3PrefixParameter,
+								"",
+							},
 						},
 					},
 				},
-				"Fn::Not": []interface{}{
-					map[string]interface{}{
-						"Fn::Equals": []string{
-							parameterLoadBalancerAlbLogsS3BucketParameter,
-							"",
+				map[string]interface{}{
+					"Condition": conditionLoadBalancerLogsS3BucketCondition,
+					/*
+					"Fn::Not": []interface{}{
+						map[string]interface{}{
+							"Fn::Equals": []string{
+								parameterLoadBalancerAlbLogsS3BucketParameter,
+								"",
+							},
 						},
 					},
+					*/
 				},
 			},
 		},
